@@ -1,0 +1,106 @@
+## @file
+#   A simple, basic, application showing how the Hello application could be
+#   built using the "Standard C Libraries" from StdLib.
+#
+#  Copyright (c) 2010 - 2011, Intel Corporation. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = mruby
+  FILE_GUID                      = a7c422ed-50ed-4a40-846b-ee4b6d92a0cb
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 0.1
+  ENTRY_POINT                    = ShellCEntryLib
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64 IPF
+#
+
+[Sources]
+  src/mruby_on_efi_shell.c
+  mruby/src/array.c
+  mruby/src/ascii.c
+  mruby/src/cdump.c
+  mruby/src/class.c
+  mruby/src/codegen.c
+  mruby/src/compar.c
+  mruby/src/crc.c
+  mruby/src/dump.c
+  mruby/src/encoding.c
+  mruby/src/encoding.h
+  mruby/src/enum.c
+  mruby/src/error.c
+  mruby/src/error.h
+  mruby/src/etc.c
+  mruby/src/gc.c
+  mruby/src/gc.h
+  mruby/src/hash.c
+  mruby/src/init.c
+  mruby/src/init_ext.c
+  mruby/src/kernel.c
+  mruby/src/load.c
+# Currently, math module is not supported, 
+# because StdLib in EDK does not have some math functions.
+#  mruby/src/math.c
+  mruby/src/name2ctype.h
+  mruby/src/node.h
+  mruby/src/numeric.c
+  mruby/src/object.c
+  mruby/src/oniguruma.h
+  mruby/src/opcode.h
+  mruby/src/pool.c
+  mruby/src/print.c
+  mruby/src/proc.c
+  mruby/src/range.c
+  mruby/src/re.c
+  mruby/src/re.h
+  mruby/src/regcomp.c
+  mruby/src/regenc.c
+  mruby/src/regenc.h
+  mruby/src/regerror.c
+  mruby/src/regex.h
+  mruby/src/regexec.c
+  mruby/src/regint.h
+  mruby/src/regparse.c
+  mruby/src/regparse.h
+  mruby/src/sprintf.c
+  mruby/src/st.c
+  mruby/src/st.h
+  mruby/src/state.c
+  mruby/src/string.c
+  mruby/src/struct.c
+  mruby/src/symbol.c
+  mruby/src/time.c
+  mruby/src/transcode.c
+  mruby/src/transcode_data.h
+  mruby/src/unicode.c
+  mruby/src/us_ascii.c
+  mruby/src/utf_8.c
+  mruby/src/variable.c
+  mruby/src/vm.c
+  mruby/src/y.tab.c
+  mruby/tools/mruby/mruby.c
+  mruby/mrblib/mrblib.c
+
+[Packages]
+  StdLib/StdLib.dec
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+
+[LibraryClasses]
+  LibC
+  LibStdio
+  DevShell
+  LibMath
+
+
+[BuildOptions]
+  GCC:*_*_*_CC_FLAGS  = -I$(WORKSPACE)/AppPkg/Applications/mruby/mruby/include -I$(WORKSPACE)/AppPkg/Applications/mruby/mruby/src -Os
