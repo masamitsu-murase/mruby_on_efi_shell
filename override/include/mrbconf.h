@@ -14,6 +14,8 @@ static inline void tzset(void)
 {
 }
 
+#define INCLUDE_UEFI
+
 #include <stdint.h>
 #undef MRB_USE_FLOAT
 

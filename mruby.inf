@@ -17,7 +17,7 @@
   BASE_NAME                      = mruby
   FILE_GUID                      = a7c422ed-50ed-4a40-846b-ee4b6d92a0cb
   MODULE_TYPE                    = UEFI_APPLICATION
-  VERSION_STRING                 = 0.1
+  VERSION_STRING                 = 0.0.1
   ENTRY_POINT                    = ShellCEntryLib
 
 #
@@ -26,6 +26,8 @@
 
 [Sources]
   src/mruby_on_efi_shell.c
+  src/uefi.c
+  src/uefi_gop.c
   mruby/src/array.c
   mruby/src/ascii.c
   mruby/src/cdump.c
