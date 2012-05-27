@@ -28,6 +28,7 @@
   src/mruby_on_efi_shell.c
   src/uefi.c
   src/uefi_gop.c
+  src/uefi_low_level.c
   mruby/src/array.c
   mruby/src/ascii.c
   mruby/src/cdump.c
@@ -102,6 +103,7 @@
   LibStdio
   DevShell
   LibMath
+  IoLib
 
 
 [BuildOptions]
