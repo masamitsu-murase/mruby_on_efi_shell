@@ -1,6 +1,8 @@
 
 #include "uefi.h"
 
+void init_uefi_mrblib(mrb_state *mrb);
+
 void
 mrb_init_uefi(mrb_state *mrb)
 {
@@ -12,5 +14,7 @@ mrb_init_uefi(mrb_state *mrb)
 
     mrb_init_uefi_gop(mrb, mrb_uefi);
     mrb_init_uefi_low_level(mrb, mrb_uefi);
+
+    init_uefi_mrblib(mrb);
 }
 
