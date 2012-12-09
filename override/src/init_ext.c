@@ -13,6 +13,7 @@ mrb_init_ext(mrb_state *mrb)
   extern void mrb_init_socket(mrb_state *mrb);
   mrb_init_socket(mrb);
 #endif
+
 #ifdef INCLUDE_UEFI
   extern void mrb_init_uefi(mrb_state *mrb);
   mrb_init_uefi(mrb);
