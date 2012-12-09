@@ -1,5 +1,5 @@
 
-MRBC = ""
+MRBC = File.expand_path("../../mruby/bin/mrbc", __FILE__)
 OUTPUT = File.expand_path("../uefi_mrblib.rb", __FILE__)
 raise "#{MRBC} is not found." unless (File.exist?(MRBC))
 
