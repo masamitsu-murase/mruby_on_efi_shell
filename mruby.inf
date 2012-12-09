@@ -31,12 +31,12 @@
   src/uefi_gop.c
   src/uefi_low_level.c
   mruby/src/array.c
-  mruby/src/cdump.c
+#  mruby/src/cdump.c
   mruby/src/class.c
   mruby/src/codegen.c
   mruby/src/compar.c
   mruby/src/crc.c
-  mruby/src/dump.c
+#  mruby/src/dump.c
   mruby/src/encoding.h
   mruby/src/enum.c
   mruby/src/error.c
@@ -82,7 +82,7 @@
   mruby/src/vm.c
   mruby/src/y.tab.c
   mruby/tools/mruby/mruby.c
-  mruby/mrblib/init_mrblib.c
+#  mruby/mrblib/init_mrblib.c
   mruby/mrblib/mrblib.c
 
 [Packages]
