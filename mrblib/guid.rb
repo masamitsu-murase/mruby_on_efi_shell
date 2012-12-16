@@ -3,7 +3,16 @@ module UEFI
   class Guid
     attr_reader :data
 
-    def initialize(str)
+    def initialize(arg)
+      case(arg)
+      when String
+        initialize_str(arg)
+      when Array
+        initialize_raw(arg)
+      end
+    end
+
+    def initialize_str(str)
       # 01234567-0123-0123-0123-0123456789AB
       str = str.slice(1 .. -2) if (str.start_with?("{"))
       data = str.split("-")
@@ -30,6 +39,10 @@ module UEFI
       end
     end
 
+    def initialize_raw(raw)
+      @data = raw.clone
+    end
+
     def to_s
       data = [ @data.slice(0, 4).reverse,
                @data.slice(4, 2).reverse,
@@ -45,6 +58,11 @@ module UEFI
     def inspect
       return "<GUID: #{self.to_s}>"
     end
+
+
+    ################################################################
+    # Well-known GUID list.
+    GLOBAL_VARIABLE = self.new("8be4df61-93ca-11d2-aa0d-00e098032b8c")
   end
 end
 

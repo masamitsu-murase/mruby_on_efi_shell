@@ -1,4 +1,36 @@
 
+# Extend Enumerable
+
+module Enumerable
+  def each_cons(num, &block)
+    buf = []
+    self.each do |val|
+      if (buf.size < num)
+        buf.push(val)
+        next if (buf.size < num)
+      else
+        buf.push(val)
+        buf.shift
+      end
+      block.call(*buf)
+    end
+    block.call(*buf) if (buf.size < num)
+  end
+
+  def each_slice(num, &block)
+    buf = []
+    self.each do |val|
+      buf.push(val)
+      if (buf.size == num)
+        block.call(*buf)
+        buf.clear
+      end
+    end
+    block.call(*buf) unless (buf.empty?)
+  end
+end
+
+
 # Extend String
 
 ##
@@ -35,7 +67,16 @@ module UEFI
   class Guid
     attr_reader :data
 
-    def initialize(str)
+    def initialize(arg)
+      case(arg)
+      when String
+        initialize_str(arg)
+      when Array
+        initialize_raw(arg)
+      end
+    end
+
+    def initialize_str(str)
       # 01234567-0123-0123-0123-0123456789AB
       str = str.slice(1 .. -2) if (str.start_with?("{"))
       data = str.split("-")
@@ -62,6 +103,10 @@ module UEFI
       end
     end
 
+    def initialize_raw(raw)
+      @data = raw.clone
+    end
+
     def to_s
       data = [ @data.slice(0, 4).reverse,
                @data.slice(4, 2).reverse,
@@ -77,6 +122,11 @@ module UEFI
     def inspect
       return "<GUID: #{self.to_s}>"
     end
+
+
+    ################################################################
+    # Well-known GUID list.
+    GLOBAL_VARIABLE = self.new("8be4df61-93ca-11d2-aa0d-00e098032b8c")
   end
 end
 
@@ -84,36 +134,4 @@ end
 # puts a
 # p a
 # p a.data
-
-
-# Extend Enumerable
-
-module Enumerable
-  def each_cons(num, &block)
-    buf = []
-    self.each do |val|
-      if (buf.size < num)
-        buf.push(val)
-        next if (buf.size < num)
-      else
-        buf.push(val)
-        buf.shift
-      end
-      block.call(*buf)
-    end
-    block.call(*buf) if (buf.size < num)
-  end
-
-  def each_slice(num, &block)
-    buf = []
-    self.each do |val|
-      buf.push(val)
-      if (buf.size == num)
-        block.call(*buf)
-        buf.clear
-      end
-    end
-    block.call(*buf) unless (buf.empty?)
-  end
-end
 

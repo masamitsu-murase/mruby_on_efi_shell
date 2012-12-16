@@ -44,3 +44,18 @@ assert("UEFI::LowLevel io_read8/io_write8 RTC") do
 end
 
 
+#------------------------------------------
+# Guid
+a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
+assert_equal([ 0x67, 0x45, 0x23, 0x01, 0x23, 0x01, 0x23, 0x01, 0x01, 0x23, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab ],
+             a.data, "UEFI::Guid data")
+
+#------------------------------------------
+# Variable
+a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
+data = [1, 2, 3, 4]
+assert_equal(true, UEFI::RuntimeService.set_variable("test_var", a, 6, data), "UEFI::RuntimeService.set_variable")
+assert_equal(data, UEFI::RuntimeService.get_variable("test_var", a), "UEFI::RuntimeService.get_variable")
+assert_equal(nil, UEFI::RuntimeService.get_variable("unknown_var", a), "UEFI::RuntimeService.get_variable (unknown_var)")
+
+

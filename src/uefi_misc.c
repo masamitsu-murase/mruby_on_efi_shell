@@ -1,4 +1,7 @@
 
+#include "string.h"
+#include "wchar.h"
+
 #include "mruby.h"
 #include "mruby/string.h"
 #include "uefi.h"
@@ -18,5 +21,20 @@ uefi_ascii_to_utf16(mrb_state *mrb, mrb_value ascii)
     RSTRING_PTR(utf16)[RSTRING_LEN(utf16) - 2] = 0;
     RSTRING_PTR(utf16)[RSTRING_LEN(utf16) - 1] = 0;
     return utf16;
+}
+
+mrb_value
+uefi_utf16_to_ascii(mrb_state *mrb, CHAR16 *utf16)
+{
+    UINTN len = wcslen(utf16);
+    mrb_value ascii = mrb_str_new(mrb, NULL, len);
+    UINTN i;
+
+    for (i=0; i<len; i++){
+        RSTRING_PTR(ascii)[i] = (char)utf16[i];
+    }
+    RSTRING_PTR(ascii)[len] = '\0';
+
+    return ascii;
 }
 
