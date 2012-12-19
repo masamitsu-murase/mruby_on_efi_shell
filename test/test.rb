@@ -15,7 +15,7 @@ p data2
 
 vars = UEFI::RuntimeService.get_all_variable_names
 vars.each do |var|
-  if (var[:guid].data == UEFI::Guid::GLOBAL_VARIABLE)
+  if (var[:guid] == UEFI::Guid::GLOBAL_VARIABLE)
     p var
   end
 end

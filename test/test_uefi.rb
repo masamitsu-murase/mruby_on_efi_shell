@@ -47,8 +47,12 @@ end
 #------------------------------------------
 # Guid
 a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
+b = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
+c = UEFI::Guid.new("00000000-0123-0123-0123-0123456789AB")
 assert_equal([ 0x67, 0x45, 0x23, 0x01, 0x23, 0x01, 0x23, 0x01, 0x01, 0x23, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab ],
-             a.data, "UEFI::Guid data")
+             a.data.bytes.to_a, "UEFI::Guid data")
+assert_equal(a, b, "UEFI::Guid <=>")
+assert_equal(true, a > b, "UEFI::Guid <=>")
 
 #------------------------------------------
 # Variable

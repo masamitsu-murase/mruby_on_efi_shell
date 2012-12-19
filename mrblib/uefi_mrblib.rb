@@ -65,6 +65,8 @@ end
 
 module UEFI
   class Guid
+    include Comparable
+
     attr_reader :data
 
     def initialize(arg)
@@ -122,6 +124,10 @@ module UEFI
 
     def inspect
       return "<GUID: #{self.to_s}>"
+    end
+
+    def <=>(other)
+      self.data <=> other.data
     end
 
 
