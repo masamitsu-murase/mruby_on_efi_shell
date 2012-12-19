@@ -27,6 +27,7 @@
 [Sources]
   mrblib/uefi_mrblib.c
   src/mruby_on_efi_shell.c
+  src/pack.c
   src/uefi.c
   src/uefi_gop.c
   src/uefi_guid.c
