@@ -11,3 +11,5 @@
 *.d
 *~
 .DS_Store
+TAGS
+XTAGS
