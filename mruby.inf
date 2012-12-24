@@ -29,6 +29,7 @@
   src/mruby_on_efi_shell.c
   src/pack.c
   src/uefi.c
+  src/uefi_boot_service.c
   src/uefi_gop.c
   src/uefi_guid.c
   src/uefi_handle.c
