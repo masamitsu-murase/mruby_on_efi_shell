@@ -4,6 +4,8 @@
 
 #include "mruby.h"
 #include "mruby/string.h"
+#include "mruby/variable.h"
+
 #include "uefi.h"
 
 mrb_value
@@ -36,5 +38,13 @@ uefi_utf16_to_ascii(mrb_state *mrb, CHAR16 *utf16)
     RSTRING_PTR(ascii)[len] = '\0';
 
     return ascii;
+}
+
+mrb_value
+uefi_const_get_under_uefi(mrb_state *mrb, const char *name)
+{
+    mrb_value uefi_ns;
+    uefi_ns = mrb_vm_const_get(mrb, mrb_intern(mrb, "UEFI"));
+    return mrb_const_get(mrb, uefi_ns, mrb_intern(mrb, name));
 }
 

@@ -15,4 +15,7 @@ void mrb_pack_gem_init(mrb_state *mrb);
 void mrb_uefi_guid_get_guid(mrb_state *mrb, mrb_value guid, EFI_GUID *pguid);
 mrb_value mrb_uefi_guid_set_guid(mrb_state *mrb, EFI_GUID *guid);
 
+void mrb_init_uefi_status(mrb_state *mrb, struct RClass *mrb_uefi);
+mrb_value mrb_uefi_status_make(mrb_state *mrb, EFI_STATUS status);
+
 #endif

@@ -35,6 +35,7 @@
   src/uefi_misc.h
   src/uefi_low_level.c
   src/uefi_runtime_service.c
+  src/uefi_status.c
   mruby/src/array.c
 #  mruby/src/cdump.c
   mruby/src/class.c
