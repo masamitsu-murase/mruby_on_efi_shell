@@ -32,9 +32,10 @@
   src/uefi_gop.c
   src/uefi_guid.c
   src/uefi_handle.c
+  src/uefi_low_level.c
   src/uefi_misc.c
   src/uefi_misc.h
-  src/uefi_low_level.c
+  src/uefi_pointer.c
   src/uefi_runtime_service.c
   src/uefi_status.c
   mruby/src/array.c
