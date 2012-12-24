@@ -62,4 +62,21 @@ assert_equal(true, UEFI::RuntimeService.set_variable("test_var", a, 6, data), "U
 assert_equal(data, UEFI::RuntimeService.get_variable("test_var", a), "UEFI::RuntimeService.get_variable")
 assert_equal(nil, UEFI::RuntimeService.get_variable("unknown_var", a), "UEFI::RuntimeService.get_variable (unknown_var)")
 
+#------------------------------------------
+# EFI_STATUS
+a = UEFI::Status::SUCCESS
+b = UEFI::Status::BUFFER_TOO_SMALL
+assert_equal(true, a == UEFI::Status::SUCCESS, "UEFI::Status#==")
+assert_equal(false, a == b, "UEFI::Status#==")
+assert_equal(true, a != b, "UEFI::Status#==")
+assert_equal(true, a.success?, "UEFI::Status#success?")
+assert_equal(false, a.error?, "UEFI::Status#error?")
+assert_equal(false, b.success?, "UEFI::Status#success?")
+assert_equal(true, b.error?, "UEFI::Status#error?")
+assert_equal("EFI_SUCCESS", a.to_s, "UEFI::Status#to_s")
+assert_equal("EFI_BUFFER_TOO_SMALL", b.to_s, "UEFI::Status#to_s")
+assert_equal("<EFI_SUCCESS (0x0000000000000000)>", a.inspect, "UEFI::Status#inspect")
+assert_equal("<EFI_BUFFER_TOO_SMALL (0x8000000000000005)>", b.inspect, "UEFI::Status#inspect")
+assert_equal("\x00\x00\x00\x00\x00\x00\x00\x00", a.value, "UEFI::Status#value")
+assert_equal("\x05\x00\x00\x00\x00\x00\x00\x80", b.value, "UEFI::Status#value")
 
