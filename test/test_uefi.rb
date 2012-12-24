@@ -66,6 +66,17 @@ end
 
 
 #==========================================
+# Boot Service
+#==========================================
+
+#------------------------------------------
+# Protocol
+block_io_protocol_guid = UEFI::Guid.new("964e5b21-6459-11d2-8e39-00a0c969723b")
+protocol = UEFI::BootService.locate_protocol(block_io_protocol_guid)
+assert_equal(false, protocol.nil?, "UEFI::BootService.locate_protocol")
+
+
+#==========================================
 # Runtime Service
 #==========================================
 

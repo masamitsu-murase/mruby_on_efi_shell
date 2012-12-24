@@ -21,5 +21,9 @@ vars.each do |var|
 end
 
 
-UEFI::RuntimeService.reset_system(UEFI::RuntimeService::ResetShutdown, UEFI::Status::SUCCESS)
+# UEFI::RuntimeService.reset_system(UEFI::RuntimeService::ResetShutdown, UEFI::Status::SUCCESS)
+
+block_io_protocol_guid = UEFI::Guid.new("964e5b21-6459-11d2-8e39-00a0c969723b")
+protocol = UEFI::BootService.locate_protocol(block_io_protocol_guid)
+p protocol
 
