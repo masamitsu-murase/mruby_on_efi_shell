@@ -65,6 +65,27 @@ assert("UEFI::LowLevel io_read8/io_write8 RTC") do
 end
 
 
+#==========================================
+# Runtime Service
+#==========================================
+
+#------------------------------------------
+# Variable
+a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
+data = [1, 2, 3, 4]
+assert_equal(true, UEFI::RuntimeService.set_variable("test_var", a, 6, data), "UEFI::RuntimeService.set_variable")
+assert_equal(data, UEFI::RuntimeService.get_variable("test_var", a), "UEFI::RuntimeService.get_variable")
+assert_equal(nil, UEFI::RuntimeService.get_variable("unknown_var", a), "UEFI::RuntimeService.get_variable (unknown_var)")
+
+#------------------------------------------
+# Reset System
+assert_equal(true, UEFI::RuntimeService.respond_to?(:reset_system), "UEFI::RuntimeService.reset_system")
+
+
+#==========================================
+# Other
+#==========================================
+
 #------------------------------------------
 # Guid
 a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
@@ -74,14 +95,6 @@ assert_equal([ 0x67, 0x45, 0x23, 0x01, 0x23, 0x01, 0x23, 0x01, 0x01, 0x23, 0x01,
              a.data.bytes.to_a, "UEFI::Guid data")
 assert_equal(a, b, "UEFI::Guid <=>")
 assert_equal(true, a > c, "UEFI::Guid <=>")
-
-#------------------------------------------
-# Variable
-a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
-data = [1, 2, 3, 4]
-assert_equal(true, UEFI::RuntimeService.set_variable("test_var", a, 6, data), "UEFI::RuntimeService.set_variable")
-assert_equal(data, UEFI::RuntimeService.get_variable("test_var", a), "UEFI::RuntimeService.get_variable")
-assert_equal(nil, UEFI::RuntimeService.get_variable("unknown_var", a), "UEFI::RuntimeService.get_variable (unknown_var)")
 
 #------------------------------------------
 # EFI_STATUS

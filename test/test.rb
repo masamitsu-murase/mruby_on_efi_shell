@@ -21,3 +21,5 @@ vars.each do |var|
 end
 
 
+UEFI::RuntimeService.reset_system(UEFI::RuntimeService::ResetShutdown, UEFI::Status::SUCCESS)
+
