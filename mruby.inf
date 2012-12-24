@@ -31,6 +31,7 @@
   src/uefi.c
   src/uefi_gop.c
   src/uefi_guid.c
+  src/uefi_handle.c
   src/uefi_misc.c
   src/uefi_misc.h
   src/uefi_low_level.c

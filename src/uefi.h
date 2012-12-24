@@ -17,5 +17,7 @@ mrb_value mrb_uefi_guid_set_guid(mrb_state *mrb, EFI_GUID *guid);
 
 void mrb_init_uefi_status(mrb_state *mrb, struct RClass *mrb_uefi);
 mrb_value mrb_uefi_status_make(mrb_state *mrb, EFI_STATUS status);
+void mrb_init_uefi_handle(mrb_state *mrb, struct RClass *mrb_uefi);
+mrb_value mrb_uefi_handle_make(mrb_state *mrb, EFI_HANDLE handle);
 
 #endif
