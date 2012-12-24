@@ -109,6 +109,15 @@ assert_equal("0x0000000000000000", a.to_s, "UEFI::Handle#to_s")
 assert_equal("<Handle 0x0000000000000000>", a.inspect, "UEFI::Handle#inspect")
 assert_equal("\x00\x00\x00\x00\x00\x00\x00\x00", a.value, "UEFI::Handle#value")
 
+#------------------------------------------
+# Pointer
+a = UEFI::Pointer::NULL
+assert_equal(true, a == UEFI::Pointer::NULL, "UEFI::Pointer#==")
+assert_equal(false, a > UEFI::Pointer::NULL, "UEFI::Pointer#<=>")
+assert_equal("0x0000000000000000", a.to_s, "UEFI::Pointer#to_s")
+assert_equal("<Pointer 0x0000000000000000>", a.inspect, "UEFI::Pointer#inspect")
+assert_equal("\x00\x00\x00\x00\x00\x00\x00\x00", a.value, "UEFI::Pointer#value")
+
 
 #------------------------------------------
 report
