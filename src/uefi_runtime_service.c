@@ -3,8 +3,12 @@
 
 #include "mruby.h"
 #include "mruby/string.h"
+#include "mruby/class.h"
 #include "mruby/array.h"
 #include "mruby/hash.h"
+#include "mruby/variable.h"
+#include "mruby/data.h"
+#include "mruby/value.h"
 
 #include "uefi.h"
 
@@ -137,14 +141,82 @@ rs_get_all_variable_names(mrb_state *mrb, mrb_value obj)
     return names;
 }
 
+static mrb_value
+rs_reset_system(mrb_state *mrb, mrb_value self)
+{
+    mrb_int type;
+    mrb_value status, data;
+    mrb_value st_cls;
+
+    data = mrb_nil_value();
+    mrb_get_args(mrb, "io|o", &type, &status, &data);
+    st_cls = uefi_const_get_under_uefi(mrb, "Status");
+
+    switch(type){
+      case EfiResetCold:
+      case EfiResetWarm:
+      case EfiResetShutdown:
+        break;
+      default:
+        mrb_raise(mrb, E_TYPE_ERROR, "wrong argument: type");
+        break;
+    }
+    if (mrb_obj_class(mrb, status) != mrb_class_ptr(st_cls)){
+        mrb_raise(mrb, E_TYPE_ERROR, "wrong argument: status");
+    }
+    if (!mrb_nil_p(data) && mrb_obj_class(mrb, data) != mrb->string_class){
+        mrb_raise(mrb, E_TYPE_ERROR, "wrong argument: data");
+    }
+
+    if (mrb_nil_p(data)){
+        gRT->ResetSystem((EFI_RESET_TYPE)type, mrb_uefi_status_raw_value(mrb, status),
+                         0, NULL);
+    }else{
+        gRT->ResetSystem((EFI_RESET_TYPE)type, mrb_uefi_status_raw_value(mrb, status),
+                         (UINTN)RSTRING_LEN(data),
+                         RSTRING_PTR(data));
+    }
+
+    return mrb_nil_value();
+}
+
+static void
+mrb_init_reset_type(mrb_state *mrb, struct RClass *mrb_ns)
+{
+    struct RESET_TYPE_INFO
+    {
+        EFI_RESET_TYPE type;
+        const char *name;
+    };
+
+#define INFO(a) { Efi##a, #a }
+    const struct RESET_TYPE_INFO info_list[] = {
+        INFO(ResetCold),
+        INFO(ResetWarm),
+        INFO(ResetShutdown)
+    };
+#undef INFO
+
+    int i;
+
+    for (i = 0; i < sizeof(info_list)/sizeof(info_list[0]); i++){
+        const struct RESET_TYPE_INFO *info = &info_list[i];
+        mrb_const_set(mrb, mrb_obj_value(mrb_ns), mrb_intern(mrb, info->name),
+                      mrb_fixnum_value(info->type));
+    }
+}
+
 void
 mrb_init_uefi_runtime_service(mrb_state *mrb, struct RClass *mrb_uefi)
 {
     struct RClass *mrb_ns;
 
     mrb_ns = mrb_define_module_under(mrb, mrb_uefi, "RuntimeService");
-    mrb_define_module_function(mrb, mrb_ns, "get_variable", rs_get_variable, 4);
-    mrb_define_module_function(mrb, mrb_ns, "set_variable", rs_set_variable, 2);
-    mrb_define_module_function(mrb, mrb_ns, "get_all_variable_names", rs_get_all_variable_names, 0);
+    mrb_define_module_function(mrb, mrb_ns, "get_variable", rs_get_variable, ARGS_REQ(4));
+    mrb_define_module_function(mrb, mrb_ns, "set_variable", rs_set_variable, ARGS_REQ(2));
+    mrb_define_module_function(mrb, mrb_ns, "get_all_variable_names", rs_get_all_variable_names, ARGS_NONE());
+    mrb_define_module_function(mrb, mrb_ns, "reset_system", rs_reset_system, ARGS_ANY());
+
+    mrb_init_reset_type(mrb, mrb_ns);
 }
 

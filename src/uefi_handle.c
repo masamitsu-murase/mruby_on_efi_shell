@@ -57,6 +57,14 @@ mrb_uefi_handle_make(mrb_state *mrb, EFI_HANDLE handle)
     return mrb_uefi_handle_make_helper(mrb, mrb_class_ptr(h_cls), handle);
 }
 
+EFI_HANDLE
+mrb_uefi_handle_raw_value(mrb_state *mrb, mrb_value handle)
+{
+    struct MRB_UEFI_HANDLE_DATA *hd;
+    hd = (struct MRB_UEFI_HANDLE_DATA *)mrb_get_datatype(mrb, handle, &mrb_uefi_handle_type);
+    return hd->handle;
+}
+
 static mrb_value
 mrb_uefi_handle_eq(mrb_state *mrb, mrb_value self)
 {

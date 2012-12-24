@@ -59,6 +59,14 @@ mrb_uefi_pointer_make(mrb_state *mrb, VOID *pointer)
     return mrb_uefi_pointer_make_helper(mrb, mrb_class_ptr(p_cls), pointer);
 }
 
+VOID *
+mrb_uefi_pointer_raw_value(mrb_state *mrb, mrb_value pointer)
+{
+    struct MRB_UEFI_POINTER_DATA *pd;
+    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, pointer, &mrb_uefi_pointer_type);
+    return pd->pointer;
+}
+
 static mrb_value
 mrb_uefi_pointer_cmp(mrb_state *mrb, mrb_value self)
 {

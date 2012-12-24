@@ -104,6 +104,14 @@ mrb_uefi_status_make(mrb_state *mrb, EFI_STATUS status)
     return mrb_uefi_status_make_helper(mrb, mrb_class_ptr(st_cls), status);
 }
 
+EFI_STATUS
+mrb_uefi_status_raw_value(mrb_state *mrb, mrb_value status)
+{
+    struct MRB_UEFI_STATUS_DATA *sd;
+    sd = (struct MRB_UEFI_STATUS_DATA *)mrb_get_datatype(mrb, status, &mrb_uefi_status_type);
+    return sd->status;
+}
+
 static mrb_value
 mrb_uefi_status_eq(mrb_state *mrb, mrb_value self)
 {
