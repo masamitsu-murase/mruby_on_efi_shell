@@ -3,11 +3,14 @@ def assert(str)
   begin
     if (yield)
       print("OK: #{str}\n")
+      $ok += 1
     else
       print("Fail: #{str}\n")
+      $ko += 1
     end
   rescue => e
     print("Error: #{str}: #{e}\n")
+    $error += 1
   end
 end
 
@@ -16,6 +19,24 @@ def assert_equal(expected, value, str)
     expected == value
   end
 end
+
+def prepare
+  $ok = 0
+  $ko = 0
+  $error = 0
+end
+
+def report
+  puts ""
+  puts "================================"
+  puts "OK: #{$ok}"
+  puts "KO: #{$ko}"
+  puts "ERROR: #{$error}"
+  puts "================================"
+end
+
+#------------------------------------------
+prepare
 
 #------------------------------------------
 # UEFI
@@ -79,4 +100,16 @@ assert_equal("<EFI_SUCCESS (0x0000000000000000)>", a.inspect, "UEFI::Status#insp
 assert_equal("<EFI_BUFFER_TOO_SMALL (0x8000000000000005)>", b.inspect, "UEFI::Status#inspect")
 assert_equal("\x00\x00\x00\x00\x00\x00\x00\x00", a.value, "UEFI::Status#value")
 assert_equal("\x05\x00\x00\x00\x00\x00\x00\x80", b.value, "UEFI::Status#value")
+
+#------------------------------------------
+# EFI_HANDLE
+a = UEFI::Handle::NULL
+assert_equal(true, a == UEFI::Handle::NULL, "UEFI::Handle#==")
+assert_equal("0x0000000000000000", a.to_s, "UEFI::Handle#to_s")
+assert_equal("<Handle 0x0000000000000000>", a.inspect, "UEFI::Handle#inspect")
+assert_equal("\x00\x00\x00\x00\x00\x00\x00\x00", a.value, "UEFI::Handle#value")
+
+
+#------------------------------------------
+report
 
