@@ -1,5 +1,8 @@
 
 # Extend Enumerable
+# This is a too easy implementation,
+# so it might be quite different from the original one.
+# For example, StopIteration is not implemented.
 
 module Enumerable
   def each_cons(num, &block)
@@ -27,6 +30,29 @@ module Enumerable
       end
     end
     block.call(*buf) unless (buf.empty?)
+  end
+
+  def each_with_index(&block)
+    count = 0
+    self.each do |val|
+      block.call(val, count)
+      count += 1
+    end
+  end
+
+  def zip(*list, &block)
+    if (list.all?{ |i| i.respond_to?(:to_ary) })
+      array_list = list.map{ |i| i.to_ary }
+    else
+      array_list = list.map{ |i| i.to_a }
+    end
+    self.each_with_index do |val, index|
+      buf = [ val ]
+      list.each do |item|
+        buf.push(item[index])
+      end
+      block.call(buf)
+    end
   end
 end
 
