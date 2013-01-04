@@ -1,29 +1,15 @@
 
 
-# SetVariable, GetVariable
-
-data = [ 0, 1, 2, 3, 4 ]
-p data
-
-guid = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
-p guid
-
-p UEFI::RuntimeService.set_variable("test_var", guid, 0x06, data)
-
-data2 = UEFI::RuntimeService.get_variable("test_var", guid)
-p data2
-
-vars = UEFI::RuntimeService.get_all_variable_names
-vars.each do |var|
-  if (var[:guid] == UEFI::Guid::GLOBAL_VARIABLE)
-    p var
-  end
-end
-
-
-# UEFI::RuntimeService.reset_system(UEFI::RuntimeService::ResetShutdown, UEFI::Status::SUCCESS)
-
 block_io_protocol_guid = UEFI::Guid.new("964e5b21-6459-11d2-8e39-00a0c969723b")
 protocol = UEFI::BootService.locate_protocol(block_io_protocol_guid)
 p protocol
+
+class BlockIoProtocol < UEFI::Protocol
+  define_function(:read_blocks, :e, [:p, :u32, :u64, :u64, :p], offset: 24)
+end
+
+bp = BlockIoProtocol.new(protocol)
+buf = " " * 512
+p bp.read_blocks(protocol, 1, 0, buf.size, buf)
+p buf
 
