@@ -25,5 +25,6 @@ EFI_HANDLE mrb_uefi_handle_raw_value(mrb_state *mrb, mrb_value handle);
 void mrb_init_uefi_pointer(mrb_state *mrb, struct RClass *mrb_uefi);
 mrb_value mrb_uefi_pointer_make(mrb_state *mrb, VOID *pointer);
 VOID *mrb_uefi_pointer_raw_value(mrb_state *mrb, mrb_value pointer);
+void mrb_init_uefi_protocol(mrb_state *mrb, struct RClass *mrb_uefi);
 
 #endif

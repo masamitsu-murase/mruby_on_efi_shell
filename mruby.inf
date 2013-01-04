@@ -37,6 +37,7 @@
   src/uefi_misc.c
   src/uefi_misc.h
   src/uefi_pointer.c
+  src/uefi_protocol.c
   src/uefi_runtime_service.c
   src/uefi_status.c
   mruby/src/array.c

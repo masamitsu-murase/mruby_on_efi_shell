@@ -21,6 +21,7 @@ mrb_init_uefi(mrb_state *mrb)
     mrb_init_uefi_status(mrb, mrb_uefi);
     mrb_init_uefi_handle(mrb, mrb_uefi);
     mrb_init_uefi_pointer(mrb, mrb_uefi);
+    mrb_init_uefi_protocol(mrb, mrb_uefi);
 
     init_uefi_mrblib(mrb);
 }

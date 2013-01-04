@@ -32,14 +32,6 @@ module Enumerable
     block.call(*buf) unless (buf.empty?)
   end
 
-  def each_with_index(&block)
-    count = 0
-    self.each do |val|
-      block.call(val, count)
-      count += 1
-    end
-  end
-
   def zip(*list, &block)
     if (list.all?{ |i| i.respond_to?(:to_ary) })
       array_list = list.map{ |i| i.to_ary }
