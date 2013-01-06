@@ -15,9 +15,9 @@ module Enumerable
         buf.push(val)
         buf.shift
       end
-      block.call(*buf)
+      block.call(buf)
     end
-    block.call(*buf) if (buf.size < num)
+    block.call(buf) if (buf.size < num)
   end
 
   def each_slice(num, &block)
@@ -25,11 +25,11 @@ module Enumerable
     self.each do |val|
       buf.push(val)
       if (buf.size == num)
-        block.call(*buf)
+        block.call(buf)
         buf.clear
       end
     end
-    block.call(*buf) unless (buf.empty?)
+    block.call(buf) if (!(buf.empty?))  # Workaround
   end
 
   def zip(*list, &block)
