@@ -15,9 +15,9 @@ module Enumerable
         buf.push(val)
         buf.shift
       end
-      block.call(*buf)
+      block.call(buf)
     end
-    block.call(*buf) if (buf.size < num)
+    block.call(buf) if (buf.size < num)
   end
 
   def each_slice(num, &block)
@@ -25,11 +25,11 @@ module Enumerable
     self.each do |val|
       buf.push(val)
       if (buf.size == num)
-        block.call(*buf)
+        block.call(buf)
         buf.clear
       end
     end
-    block.call(*buf) unless (buf.empty?)
+    block.call(buf) if (!(buf.empty?))  # Workaround
   end
 
   def zip(*list, &block)
@@ -176,50 +176,76 @@ module UEFI
       end
     end
 
-    def self.check_arg(ret_type, arg_type)
+    def self.check_arg(ret_type, arg_type = nil)
       type_list = TYPES + LONG_NAME_TYPES
 
       unless (type_list.include?(ret_type))
         raise "ret_type should be one of #{type_list}"
       end
 
-      invalid_type = arg_type.find do |item|
-        next !(type_list.include?(item))
+      if (arg_type)
+        invalid_type = arg_type.find do |item|
+          next !(type_list.include?(item))
+        end
+        raise "arg_type should be one of #{type_list}" if (invalid_type)
       end
-      raise "arg_type should be one of #{type_list}" if (invalid_type)
+    end
+
+    def self.normalize_arg_type(type)
+      index = LONG_NAME_TYPES.index(type)
+      return index ? TYPES[index] : type
+    end
+
+    def self.calculate_next_offset(type)
+      return 0 if (@members.empty?)
+
+      align = ALIGN_SIZE_INFO[type][:align]
+      last_offset = @members.last[:offset]
+      last_size = @members.last[:size]
+
+      return ((last_offset + last_size + align - 1) / align).to_i * align
     end
 
     def self.define_function(name, ret_type, arg_type, option = {})
       check_arg(ret_type, arg_type)
 
-      # Convert to short name
-      short_name = TYPES  # Workaround
-      long_name = LONG_NAME_TYPES  # Workaround
-      arg_type = arg_type.map do |type|
-        index = long_name.index(type)
-        next index ? short_name[index] : type
-      end
-      index = long_name.index(ret_type)
-      ret_type = short_name[index] if (index)
+      arg_type = arg_type.map{ |i| normalize_arg_type(i) }
+      ret_type = normalize_arg_type(ret_type)
 
       if (option[:offset])
         offset = option[:offset]
-      elsif (@members.empty?)
-        offset = 0
       else
-        last = @members.last
-        offset = last[:offset] + last[:size]
+        offset = calculate_next_offset(:p)
       end
 
-      size = (option[:size] || FUNCTION_POINTER_SIZE)
-
-      @members.push({ name: name, ret_type: ret_type,
-                      arg_type: arg_type, offset: offset, size: size })
+      @members.push({ name: name, function: true,
+                      ret_type: ret_type, arg_type: arg_type,
+                      offset: offset, size: FUNCTION_POINTER_SIZE })
 
       define_method(name) do |*args|
         check_arg(args, arg_type)
 
         call_raw_function(args, arg_type, ret_type, offset)
+      end
+    end
+
+    def self.define_member(name, type, option = {})
+      check_arg(type)
+
+      type = normalize_arg_type(type)
+
+      if (option[:offset])
+        offset = option[:offset]
+      else
+        offset = calculate_next_offset(type)
+      end
+
+      @members.push({ name: name, function: false,
+                      type: type,
+                      offset: offset, size: ALIGN_SIZE_INFO[type][:size] })
+
+      define_method(name) do
+        get_raw_value(type, offset)
       end
     end
 
