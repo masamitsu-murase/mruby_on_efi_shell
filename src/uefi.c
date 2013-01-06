@@ -9,6 +9,7 @@ mrb_init_uefi(mrb_state *mrb)
     struct RClass *mrb_uefi;
 
     mrb_pack_gem_init(mrb);
+    mrb_numeric_ext_init(mrb);
 
     mrb_uefi = mrb_define_module(mrb, "UEFI");
 

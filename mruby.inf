@@ -26,6 +26,7 @@
 
 [Sources]
   mrblib/uefi_mrblib.c
+  src/ext/numeric.c
   src/ext/pack.c
   src/mruby_on_efi_shell.c
   src/uefi.c
