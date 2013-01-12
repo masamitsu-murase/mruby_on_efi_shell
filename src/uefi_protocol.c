@@ -155,6 +155,36 @@ get_raw_value(mrb_state *mrb, mrb_sym type, VOID *ptr)
     return mrb_nil_value();
 }
 
+static void
+set_raw_value(mrb_state *mrb, mrb_sym type, VOID *ptr, mrb_value value)
+{
+    if (type == INTERN(mrb, "e")){
+        *(EFI_STATUS *)ptr = mrb_uefi_status_raw_value(mrb, value);
+    }else if (type == INTERN(mrb, "p")){
+        *(VOID **)ptr = mrb_uefi_pointer_raw_value(mrb, value);
+    }else if (type == INTERN(mrb, "h")){
+        *(EFI_HANDLE *)ptr = mrb_uefi_handle_raw_value(mrb, value);
+    }else if (type == INTERN(mrb, "u64")){
+        *(UINT64 *)ptr = (UINT64)mrb_fixnum(value);
+    }else if (type == INTERN(mrb, "i64")){
+        *(INT64 *)ptr = (INT64)mrb_fixnum(value);
+    }else if (type == INTERN(mrb, "u32")){
+        *(UINT32 *)ptr = (UINT32)mrb_fixnum(value);
+    }else if (type == INTERN(mrb, "i32")){
+        *(INT32 *)ptr = (INT32)mrb_fixnum(value);
+    }else if (type == INTERN(mrb, "u16")){
+        *(UINT16 *)ptr = (UINT16)mrb_fixnum(value);
+    }else if (type == INTERN(mrb, "i16")){
+        *(INT16 *)ptr = (INT16)mrb_fixnum(value);
+    }else if (type == INTERN(mrb, "u8")){
+        *(UINT8 *)ptr = (UINT8)mrb_fixnum(value);
+    }else if (type == INTERN(mrb, "i8")){
+        *(INT8 *)ptr = (INT8)mrb_fixnum(value);
+    }else{
+        mrb_raise(mrb, E_ARGUMENT_ERROR, "Bug Unknown type");
+    }
+}
+
 static mrb_value
 mrb_uefi_protocol_raw_function(mrb_state *mrb, mrb_value self)
 {
@@ -192,6 +222,13 @@ mrb_uefi_protocol_raw_function(mrb_state *mrb, mrb_value self)
     return ret;
 }
 
+static VOID *
+mrb_uefi_protocol_pointer(mrb_state *mrb, mrb_value self)
+{
+    mrb_value pointer = mrb_iv_get(mrb, self, INTERN(mrb, "@pointer"));
+    return mrb_uefi_pointer_raw_value(mrb, pointer);
+}
+
 static mrb_value
 mrb_uefi_protocol_get_raw_value(mrb_state *mrb, mrb_value self)
 {
@@ -200,15 +237,23 @@ mrb_uefi_protocol_get_raw_value(mrb_state *mrb, mrb_value self)
     UINTN addr;
 
     mrb_get_args(mrb, "ni", &type, &offset);
-
-    {
-        mrb_value pointer;
-
-        pointer = mrb_iv_get(mrb, self, INTERN(mrb, "@pointer"));
-        addr = (UINTN)mrb_uefi_pointer_raw_value(mrb, pointer);
-    }
-
+    addr = (UINTN)mrb_uefi_protocol_pointer(mrb, self);
     return get_raw_value(mrb, type, (VOID *)(addr + offset));
+}
+
+static mrb_value
+mrb_uefi_protocol_set_raw_value(mrb_state *mrb, mrb_value self)
+{
+    mrb_sym type;
+    mrb_int offset;
+    mrb_value value;
+    UINTN addr;
+
+    mrb_get_args(mrb, "nio", &type, &offset, &value);
+    addr = (UINTN)mrb_uefi_protocol_pointer(mrb, self);
+    set_raw_value(mrb, type, (VOID *)(addr + offset), value);
+
+    return value;
 }
 
 static void
@@ -261,5 +306,6 @@ mrb_init_uefi_protocol(mrb_state *mrb, struct RClass *mrb_uefi)
     mrb_uefi_protocol_init_type_info(mrb, cls);
     mrb_define_method(mrb, cls, "call_raw_function", mrb_uefi_protocol_raw_function, ARGS_REQ(4));
     mrb_define_method(mrb, cls, "get_raw_value", mrb_uefi_protocol_get_raw_value, ARGS_REQ(2));
+    mrb_define_method(mrb, cls, "set_raw_value", mrb_uefi_protocol_set_raw_value, ARGS_REQ(3));
 }
 

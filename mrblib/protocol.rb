@@ -99,6 +99,10 @@ module UEFI
       define_method(name) do
         get_raw_value(type, offset)
       end
+
+      define_method("#{name}=".intern) do |value|
+        set_raw_value(type, offset, value)
+      end
     end
 
     def self.pack(alignment = nil)
