@@ -8,9 +8,8 @@ module UEFI
 
     def self.inherited(cls)
       cls.instance_eval do
-        # members should be
-        #  [ { :name, :ret_type, :arg_type, :offset, :size }, ... ]
         @members = []
+        @alignment = nil
       end
     end
 
@@ -37,11 +36,15 @@ module UEFI
     def self.calculate_next_offset(type)
       return 0 if (@members.empty?)
 
-      align = ALIGN_SIZE_INFO[type][:align]
+      if (@alignment)
+        alignment = [ @alignment, TYPE_INFO[type][:alignment] ].min
+      else
+        alignment = TYPE_INFO[type][:alignment]
+      end
       last_offset = @members.last[:offset]
       last_size = @members.last[:size]
 
-      return ((last_offset + last_size + align - 1) / align).to_i * align
+      return ((last_offset + last_size + alignment - 1) / alignment).to_i * alignment
     end
 
     def self.define_function(name, ret_type, arg_type, option = {})
@@ -80,14 +83,22 @@ module UEFI
 
       @members.push({ name: name, function: false,
                       type: type,
-                      offset: offset, size: ALIGN_SIZE_INFO[type][:size] })
+                      offset: offset, size: TYPE_INFO[type][:size] })
 
       define_method(name) do
         get_raw_value(type, offset)
       end
     end
 
+    def self.pack(alignment = nil)
+      alignment_list = [ nil, 1, 2, 4, 8 ]
+      raise "Invalid alignment" unless (alignment_list.include?(alignment))
 
+      @alignment = alignment
+    end
+
+
+    #================================================================
     def initialize(pointer)
       raise TypeError, "argument should be UEFI::Pointer." unless (pointer.kind_of?(Pointer))
       @pointer = pointer

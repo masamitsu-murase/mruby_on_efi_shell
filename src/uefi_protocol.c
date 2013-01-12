@@ -212,45 +212,45 @@ mrb_uefi_protocol_get_raw_value(mrb_state *mrb, mrb_value self)
 }
 
 static void
-mrb_uefi_protocol_init_align_size_info(mrb_state *mrb, struct RClass *cls)
+mrb_uefi_protocol_init_type_info(mrb_state *mrb, struct RClass *cls)
 {
-#define SET_ALIGN_SIZE(name, type)                       \
+#define SET_TYPE_INFO(name, type)                        \
     do{                                                  \
         struct struct_##name                             \
         {                                                \
-            CHAR8 buf;                                   \
+            CHAR8 dummy_buf;                             \
             type value;                                  \
         };                                               \
-        int size = sizeof(type);                                     \
-        int align = offsetof(struct struct_##name, value);           \
-        int arena = mrb_gc_arena_save(mrb);                          \
-        mrb_value h = mrb_hash_new_capa(mrb, 2);                     \
-        mrb_hash_set(mrb, h, sym_size, mrb_fixnum_value(size));      \
-        mrb_hash_set(mrb, h, sym_align, mrb_fixnum_value(align));    \
-        mrb_hash_set(mrb, hash, mrb_symbol_value(INTERN(mrb, #name)), h); \
+        int size = sizeof(type);                                        \
+        int alignment = offsetof(struct struct_##name, value);          \
+        int arena = mrb_gc_arena_save(mrb);                             \
+        mrb_value h = mrb_hash_new_capa(mrb, 2);                        \
+        mrb_hash_set(mrb, h, sym_size, mrb_fixnum_value(size));         \
+        mrb_hash_set(mrb, h, sym_alignment, mrb_fixnum_value(alignment)); \
+        mrb_hash_set(mrb, info, mrb_symbol_value(INTERN(mrb, #name)), h); \
         mrb_gc_arena_restore(mrb, arena);                               \
     }while(0)
 
-    mrb_value hash = mrb_hash_new_capa(mrb, 12);
+    mrb_value info = mrb_hash_new_capa(mrb, 12);
     mrb_value sym_size = mrb_symbol_value(INTERN(mrb, "size"));
-    mrb_value sym_align = mrb_symbol_value(INTERN(mrb, "align"));
+    mrb_value sym_alignment = mrb_symbol_value(INTERN(mrb, "alignment"));
 
     /* :p, :u8, :u16, :u32, :u64, :i8, :i16, :i32, :i64, :h, :e, :b */
-    SET_ALIGN_SIZE(p, VOID *);
-    SET_ALIGN_SIZE(u8, UINT8);
-    SET_ALIGN_SIZE(u16, UINT16);
-    SET_ALIGN_SIZE(u32, UINT32);
-    SET_ALIGN_SIZE(u64, UINT64);
-    SET_ALIGN_SIZE(i8, INT8);
-    SET_ALIGN_SIZE(i16, INT16);
-    SET_ALIGN_SIZE(i32, INT32);
-    SET_ALIGN_SIZE(i64, INT64);
-    SET_ALIGN_SIZE(h, EFI_HANDLE);
-    SET_ALIGN_SIZE(e, EFI_STATUS);
-    SET_ALIGN_SIZE(b, BOOLEAN);
+    SET_TYPE_INFO(p, VOID *);
+    SET_TYPE_INFO(u8, UINT8);
+    SET_TYPE_INFO(u16, UINT16);
+    SET_TYPE_INFO(u32, UINT32);
+    SET_TYPE_INFO(u64, UINT64);
+    SET_TYPE_INFO(i8, INT8);
+    SET_TYPE_INFO(i16, INT16);
+    SET_TYPE_INFO(i32, INT32);
+    SET_TYPE_INFO(i64, INT64);
+    SET_TYPE_INFO(h, EFI_HANDLE);
+    SET_TYPE_INFO(e, EFI_STATUS);
+    SET_TYPE_INFO(b, BOOLEAN);
 
-    mrb_const_set(mrb, mrb_obj_value(cls), INTERN(mrb, "ALIGN_SIZE_INFO"), hash);
-#undef SET_ALIGN_SIZE
+    mrb_const_set(mrb, mrb_obj_value(cls), INTERN(mrb, "TYPE_INFO"), info);
+#undef SET_TYPE_INFO
 }
 
 void
@@ -258,9 +258,7 @@ mrb_init_uefi_protocol(mrb_state *mrb, struct RClass *mrb_uefi)
 {
     struct RClass *cls = mrb_define_class_under(mrb, mrb_uefi, "Protocol", mrb->object_class);
 
-    mrb_const_set(mrb, mrb_obj_value(cls), INTERN(mrb, "FUNCTION_POINTER_SIZE"),
-                  mrb_fixnum_value(sizeof(VOID *)));
-    mrb_uefi_protocol_init_align_size_info(mrb, cls);
+    mrb_uefi_protocol_init_type_info(mrb, cls);
     mrb_define_method(mrb, cls, "call_raw_function", mrb_uefi_protocol_raw_function, ARGS_REQ(4));
     mrb_define_method(mrb, cls, "get_raw_value", mrb_uefi_protocol_get_raw_value, ARGS_REQ(2));
 }
