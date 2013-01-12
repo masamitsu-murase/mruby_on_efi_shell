@@ -9,7 +9,7 @@ module UEFI
     def self.inherited(cls)
       cls.instance_eval do
         @members = []
-        @alignment = nil
+        @pack_alignment = nil
       end
     end
 
@@ -33,14 +33,9 @@ module UEFI
       return index ? TYPES[index] : type
     end
 
-    def self.calculate_next_offset(type)
+    def self.calculate_next_offset(alignment)
       return 0 if (@members.empty?)
 
-      if (@alignment)
-        alignment = [ @alignment, TYPE_INFO[type][:alignment] ].min
-      else
-        alignment = TYPE_INFO[type][:alignment]
-      end
       last_offset = @members.last[:offset]
       last_size = @members.last[:size]
 
@@ -53,15 +48,25 @@ module UEFI
       arg_type = arg_type.map{ |i| normalize_arg_type(i) }
       ret_type = normalize_arg_type(ret_type)
 
+      if (@pack_alignment)
+        alignment = [ @pack_alignment, TYPE_INFO[:p][:alignment] ].min
+      else
+        alignment = TYPE_INFO[:p][:alignment]
+      end
+
       if (option[:offset])
         offset = option[:offset]
       else
-        offset = calculate_next_offset(:p)
+        offset = calculate_next_offset(alignment)
       end
 
-      @members.push({ name: name, function: true,
-                      ret_type: ret_type, arg_type: arg_type,
-                      offset: offset, size: FUNCTION_POINTER_SIZE })
+      @members.push({ name: name, type: :p,
+                      alignment: alignment,
+                      offset: offset, size: TYPE_INFO[:p][:size],
+                      function: {
+                        ret_type: ret_type, arg_type: arg_type
+                      }
+                    })
 
       define_method(name) do |*args|
         check_arg(args, arg_type)
@@ -75,14 +80,20 @@ module UEFI
 
       type = normalize_arg_type(type)
 
+      if (@pack_alignment)
+        alignment = [ @pack_alignment, TYPE_INFO[type][:alignment] ].min
+      else
+        alignment = TYPE_INFO[type][:alignment]
+      end
+
       if (option[:offset])
         offset = option[:offset]
       else
-        offset = calculate_next_offset(type)
+        offset = calculate_next_offset(alignment)
       end
 
-      @members.push({ name: name, function: false,
-                      type: type,
+      @members.push({ name: name, type: type,
+                      alignment: alignment,
                       offset: offset, size: TYPE_INFO[type][:size] })
 
       define_method(name) do
@@ -94,7 +105,15 @@ module UEFI
       alignment_list = [ nil, 1, 2, 4, 8 ]
       raise "Invalid alignment" unless (alignment_list.include?(alignment))
 
-      @alignment = alignment
+      @pack_alignment = alignment
+    end
+
+    def self.size
+      @size ||= calculate_next_offset(alignment)
+    end
+
+    def self.alignment
+      @alignment ||= @members.map{ |i| i[:alignment] }.max
     end
 
 
