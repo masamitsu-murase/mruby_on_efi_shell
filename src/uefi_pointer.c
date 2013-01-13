@@ -143,14 +143,13 @@ mrb_uefi_pointer_cmp(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_uefi_pointer_to_s(mrb_state *mrb, mrb_value self)
 {
-    struct MRB_UEFI_POINTER_DATA *pd;
     char buf[32];
+    VOID *ptr = mrb_uefi_pointer_raw_value(mrb, self);
 
-    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
 #if defined(MDE_CPU_X64)
-    snprintf(buf, sizeof(buf), "0x%016llX", (UINTN)(pd->pointer));
+    snprintf(buf, sizeof(buf), "0x%016llX", (UINTN)ptr);
 #elif defined(MDE_CPU_IA32)
-    snprintf(buf, sizeof(buf), "0x%08lX", (UINTN)(pd->pointer));
+    snprintf(buf, sizeof(buf), "0x%08lX", (UINTN)ptr);
 #else
 #error Not Supported
 #endif
@@ -160,14 +159,13 @@ mrb_uefi_pointer_to_s(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_uefi_pointer_inspect(mrb_state *mrb, mrb_value self)
 {
-    struct MRB_UEFI_POINTER_DATA *pd;
     char buf[32];
+    VOID *ptr = mrb_uefi_pointer_raw_value(mrb, self);
 
-    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
 #if defined(MDE_CPU_X64)
-    snprintf(buf, sizeof(buf), "<Pointer 0x%016llX>", (UINTN)(pd->pointer));
+    snprintf(buf, sizeof(buf), "<Pointer 0x%016llX>", (UINTN)ptr);
 #elif defined(MDE_CPU_IA32)
-    snprintf(buf, sizeof(buf), "<Pointer 0x%08lX>", (UINTN)(pd->pointer));
+    snprintf(buf, sizeof(buf), "<Pointer 0x%08lX>", (UINTN)ptr);
 #else
 #error Not Supported
 #endif
@@ -177,29 +175,24 @@ mrb_uefi_pointer_inspect(mrb_state *mrb, mrb_value self)
 static mrb_value
 mrb_uefi_pointer_value(mrb_state *mrb, mrb_value self)
 {
-    struct MRB_UEFI_POINTER_DATA *pd;
     mrb_value value = mrb_str_new(mrb, NULL, sizeof(VOID *));
-
-    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
-    memcpy(RSTRING_PTR(value), &pd->pointer, sizeof(pd->pointer));
+    VOID *ptr = mrb_uefi_pointer_raw_value(mrb, self);
+    memcpy(RSTRING_PTR(value), &ptr, sizeof(ptr));
     return value;
 }
 
 static mrb_value
 mrb_uefi_pointer_to_i(mrb_state *mrb, mrb_value self)
 {
-    struct MRB_UEFI_POINTER_DATA *pd;
-
-    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
-    return mrb_fixnum_value((mrb_int)(UINTN)(pd->pointer));
+    VOID *ptr = mrb_uefi_pointer_raw_value(mrb, self);
+    return mrb_fixnum_value((mrb_int)(UINTN)ptr);
 }
 
 static mrb_value
 mrb_uefi_pointer_plus_helper(mrb_state *mrb, mrb_value self, mrb_int diff)
 {
-    struct MRB_UEFI_POINTER_DATA *pd;
-    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
-    return mrb_uefi_pointer_make(mrb, (VOID *)(((UINTN)pd->pointer) + diff));
+    VOID *ptr = mrb_uefi_pointer_raw_value(mrb, self);
+    return mrb_uefi_pointer_make(mrb, (VOID *)((UINTN)ptr + diff));
 }
 
 static mrb_value
@@ -224,9 +217,8 @@ mrb_uefi_pointer_minus(mrb_state *mrb, mrb_value self)
     mrb_get_args(mrb, "o", &rhs);
     pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, rhs, &mrb_uefi_pointer_type);
     if (pd){
-        struct MRB_UEFI_POINTER_DATA *pd_self;
-        pd_self = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
-        return mrb_fixnum_value((mrb_int)((UINTN)pd_self->pointer - (UINTN)pd->pointer));
+        VOID *ptr = mrb_uefi_pointer_raw_value(mrb, self);
+        return mrb_fixnum_value((mrb_int)((UINTN)ptr - (UINTN)pd->pointer));
     }else if (mrb_fixnum_p(rhs)){
         return mrb_uefi_pointer_plus_helper(mrb, self, -mrb_fixnum(rhs));
     }else{
