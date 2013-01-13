@@ -308,6 +308,20 @@ mrb_str_get_pointer(mrb_state *mrb, mrb_value self)
     pointer = mrb_uefi_pointer_make(mrb, RSTRING_PTR(self));
     mrb_iv_set(mrb, pointer, INTERN(mrb, "@origin"), self);
 
+    /* Remove methods which resize String to prevent changing buffer's address. */
+    {
+        /* sub! and []= are using replace, so we don't have to undef them. */
+        const char *undef_method_list[] = {
+            "chomp!", "chop!", "gsub!", "replace"
+        };
+        int i;
+        mrb_value singleton_class = mrb_singleton_class(mrb, self);
+
+        for (i = 0; i < sizeof(undef_method_list)/sizeof(undef_method_list[0]); i++){
+            mrb_undef_method(mrb, mrb_class_ptr(singleton_class), undef_method_list[i]);
+        }
+    }
+
     return pointer;
 }
 
