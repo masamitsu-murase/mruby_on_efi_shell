@@ -120,6 +120,24 @@ module UEFI
       @alignment ||= @members.map{ |i| i[:alignment] }.max
     end
 
+    def self.to_s(detail = false)
+      if (detail)
+        str_list = @members.map do |item|
+          if (item[:function])
+            arg_type_str = item[:function][:arg_type].map{ |i| i.to_s }.join(", ")
+            next "0x#{item[:offset].to_s(16).rjust(4,'0')}" +
+              "  #{item[:function][:ret_type]} #{item[:name]}(#{arg_type_str})"
+          else
+            next "0x#{item[:offset].to_s(16).rjust(4,'0')}" +
+              "  #{item[:type]} #{item[:name]}"
+          end
+        end
+        return "#{self.name}\n" + str_list.join("\n")
+      else
+        return super
+      end
+    end
+
 
     #================================================================
     def initialize(pointer)
