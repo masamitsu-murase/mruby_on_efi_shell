@@ -145,6 +145,10 @@ module UEFI
       @pointer = pointer
     end
 
+    def inspect
+      return "<#{self.class.name}: #{@pointer}"
+    end
+
     def check_arg(args, arg_type)
       raise "wrong argument count" unless (args.size == arg_type.size)
 
