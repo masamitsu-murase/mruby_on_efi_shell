@@ -185,6 +185,15 @@ mrb_uefi_pointer_value(mrb_state *mrb, mrb_value self)
     return value;
 }
 
+static mrb_value
+mrb_uefi_pointer_to_i(mrb_state *mrb, mrb_value self)
+{
+    struct MRB_UEFI_POINTER_DATA *pd;
+
+    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
+    return mrb_fixnum_value((mrb_int)(UINTN)(pd->pointer));
+}
+
 void
 mrb_init_uefi_pointer(mrb_state *mrb, struct RClass *mrb_uefi)
 {
@@ -201,6 +210,7 @@ mrb_init_uefi_pointer(mrb_state *mrb, struct RClass *mrb_uefi)
     mrb_define_method(mrb, p_cls, "to_s", mrb_uefi_pointer_to_s, ARGS_NONE());
     mrb_define_method(mrb, p_cls, "inspect", mrb_uefi_pointer_inspect, ARGS_NONE());
     mrb_define_method(mrb, p_cls, "value", mrb_uefi_pointer_value, ARGS_NONE());
+    mrb_define_method(mrb, p_cls, "to_i", mrb_uefi_pointer_to_i, ARGS_NONE());
 
     mrb_const_set(mrb, mrb_obj_value(p_cls), mrb_intern(mrb, "NULL"),
                   mrb_uefi_pointer_make_helper(mrb, p_cls, NULL));
