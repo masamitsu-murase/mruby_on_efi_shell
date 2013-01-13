@@ -68,6 +68,58 @@ mrb_uefi_pointer_raw_value(mrb_state *mrb, mrb_value pointer)
 }
 
 static mrb_value
+mrb_uefi_pointer_initialize(mrb_state *mrb, mrb_value self)
+{
+    struct MRB_UEFI_POINTER_DATA *pd;
+    int n;
+    mrb_int addr;
+
+    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
+    if (pd){
+        mrb_uefi_pointer_free(mrb, pd);
+    }
+
+    n = mrb_get_args(mrb, "|i", &addr);
+    if (n == 0){
+        /* Initialize to NULL */
+        addr = 0;
+    }
+    pd = mrb_uefi_pointer_alloc(mrb, (VOID *)(UINTN)addr);
+    DATA_PTR(self) = pd;
+    DATA_TYPE(self) = &mrb_uefi_pointer_type;
+
+    return self;
+}
+
+static mrb_value
+mrb_uefi_pointer_initialize_copy(mrb_state *mrb, mrb_value copy)
+{
+    mrb_value src;
+    struct MRB_UEFI_POINTER_DATA *pd;
+
+    mrb_get_args(mrb, "o", &src);
+
+    if (mrb_obj_equal(mrb, copy, src)){
+        return copy;
+    }
+    if (!mrb_obj_is_instance_of(mrb, src, mrb_obj_class(mrb, copy))){
+        mrb_raise(mrb, E_TYPE_ERROR, "wrong argument class");
+    }
+    if (DATA_PTR(copy)){
+        pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, copy, &mrb_uefi_pointer_type);
+    }else{
+        pd = mrb_uefi_pointer_alloc(mrb, NULL);
+        DATA_PTR(copy) = pd;
+        DATA_TYPE(copy) = &mrb_uefi_pointer_type;
+    }
+    if (!pd){
+        mrb_raise(mrb, E_RUNTIME_ERROR, "allocation error");
+    }
+    pd->pointer = ((struct MRB_UEFI_POINTER_DATA *)DATA_TYPE(src))->pointer;
+    return copy;
+}
+
+static mrb_value
 mrb_uefi_pointer_cmp(mrb_state *mrb, mrb_value self)
 {
     struct MRB_UEFI_POINTER_DATA *pd1, *pd2;
@@ -143,6 +195,8 @@ mrb_init_uefi_pointer(mrb_state *mrb, struct RClass *mrb_uefi)
 
     mrb_include_module(mrb, p_cls, mrb_class_get(mrb, "Comparable"));
 
+    mrb_define_method(mrb, p_cls, "initialize", mrb_uefi_pointer_initialize, ARGS_ANY());
+    mrb_define_method(mrb, p_cls, "initialize_copy", mrb_uefi_pointer_initialize_copy, ARGS_REQ(1));
     mrb_define_method(mrb, p_cls, "<=>", mrb_uefi_pointer_cmp, ARGS_REQ(1));
     mrb_define_method(mrb, p_cls, "to_s", mrb_uefi_pointer_to_s, ARGS_NONE());
     mrb_define_method(mrb, p_cls, "inspect", mrb_uefi_pointer_inspect, ARGS_NONE());
