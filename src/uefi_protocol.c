@@ -298,6 +298,25 @@ mrb_uefi_protocol_init_type_info(mrb_state *mrb, struct RClass *cls)
 #undef SET_TYPE_INFO
 }
 
+static mrb_value
+mrb_str_get_pointer(mrb_state *mrb, mrb_value self)
+{
+    mrb_value pointer;
+
+    /* Use mrb_str_resize instead of static str_modify */
+    mrb_str_resize(mrb, self, RSTRING_LEN(self));
+    pointer = mrb_uefi_pointer_make(mrb, RSTRING_PTR(self));
+    mrb_iv_set(mrb, pointer, INTERN(mrb, "@origin"), self);
+
+    return pointer;
+}
+
+static void
+mrb_extend_string(mrb_state *mrb)
+{
+    mrb_define_method(mrb, mrb->string_class, "pointer", mrb_str_get_pointer, ARGS_NONE());
+}
+
 void
 mrb_init_uefi_protocol(mrb_state *mrb, struct RClass *mrb_uefi)
 {
@@ -307,5 +326,7 @@ mrb_init_uefi_protocol(mrb_state *mrb, struct RClass *mrb_uefi)
     mrb_define_method(mrb, cls, "call_raw_function", mrb_uefi_protocol_raw_function, ARGS_REQ(4));
     mrb_define_method(mrb, cls, "get_raw_value", mrb_uefi_protocol_get_raw_value, ARGS_REQ(2));
     mrb_define_method(mrb, cls, "set_raw_value", mrb_uefi_protocol_set_raw_value, ARGS_REQ(3));
+
+    mrb_extend_string(mrb);
 }
 
