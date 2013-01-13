@@ -16,6 +16,12 @@
 
 
 static mrb_value
+bs_pointer(mrb_state *mrb, mrb_value self)
+{
+    return mrb_uefi_pointer_make(mrb, gBS);
+}
+
+static mrb_value
 bs_locate_protocol(mrb_state *mrb, mrb_value self)
 {
     mrb_value guid;
@@ -40,6 +46,7 @@ mrb_init_uefi_boot_service(mrb_state *mrb, struct RClass *mrb_uefi)
 
     bs = mrb_define_module_under(mrb, mrb_uefi, "BootService");
 
+    mrb_define_module_function(mrb, bs, "pointer", bs_pointer, ARGS_NONE());
     mrb_define_module_function(mrb, bs, "locate_protocol", bs_locate_protocol, ARGS_REQ(1));
 }
 
