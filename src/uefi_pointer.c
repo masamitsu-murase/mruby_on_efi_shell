@@ -237,6 +237,39 @@ mrb_uefi_pointer_minus(mrb_state *mrb, mrb_value self)
     return mrb_nil_value();
 }
 
+static mrb_value
+mrb_uefi_pointer_read(mrb_state *mrb, mrb_value self)
+{
+    /* TODO */
+    /* If @origin exists, check range of buffer. */
+
+    mrb_int size;
+    mrb_value buf;
+    VOID *ptr;
+
+    mrb_get_args(mrb, "i", &size);
+    buf = mrb_str_new(mrb, NULL, size);
+    ptr = mrb_uefi_pointer_raw_value(mrb, self);
+    memcpy(RSTRING_PTR(buf), ptr, size);
+    return buf;
+}
+
+static mrb_value
+mrb_uefi_pointer_write(mrb_state *mrb, mrb_value self)
+{
+    /* TODO */
+    /* If @origin exists, check range of buffer. */
+
+    char *buf;
+    int len;
+    VOID *ptr;
+
+    mrb_get_args(mrb, "s", &buf, &len);
+    ptr = mrb_uefi_pointer_raw_value(mrb, self);
+    memcpy(buf, ptr, len);
+    return mrb_nil_value();
+}
+
 void
 mrb_init_uefi_pointer(mrb_state *mrb, struct RClass *mrb_uefi)
 {
@@ -256,6 +289,8 @@ mrb_init_uefi_pointer(mrb_state *mrb, struct RClass *mrb_uefi)
     mrb_define_method(mrb, p_cls, "to_i", mrb_uefi_pointer_to_i, ARGS_NONE());
     mrb_define_method(mrb, p_cls, "+", mrb_uefi_pointer_plus, ARGS_REQ(1));
     mrb_define_method(mrb, p_cls, "-", mrb_uefi_pointer_minus, ARGS_REQ(1));
+    mrb_define_method(mrb, p_cls, "read", mrb_uefi_pointer_read, ARGS_REQ(1));
+    mrb_define_method(mrb, p_cls, "write", mrb_uefi_pointer_write, ARGS_REQ(1));
 
     mrb_const_set(mrb, mrb_obj_value(p_cls), mrb_intern(mrb, "NULL"),
                   mrb_uefi_pointer_make_helper(mrb, p_cls, NULL));
