@@ -194,6 +194,49 @@ mrb_uefi_pointer_to_i(mrb_state *mrb, mrb_value self)
     return mrb_fixnum_value((mrb_int)(UINTN)(pd->pointer));
 }
 
+static mrb_value
+mrb_uefi_pointer_plus_helper(mrb_state *mrb, mrb_value self, mrb_int diff)
+{
+    struct MRB_UEFI_POINTER_DATA *pd;
+    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
+    return mrb_uefi_pointer_make(mrb, (VOID *)(((UINTN)pd->pointer) + diff));
+}
+
+static mrb_value
+mrb_uefi_pointer_plus(mrb_state *mrb, mrb_value self)
+{
+    /* TODO */
+    /* If @origin exists, check it. */
+    mrb_int diff;
+
+    mrb_get_args(mrb, "i", &diff);
+    return mrb_uefi_pointer_plus_helper(mrb, self, diff);
+}
+
+static mrb_value
+mrb_uefi_pointer_minus(mrb_state *mrb, mrb_value self)
+{
+    /* TODO */
+    /* If @origin exists, check it. */
+    mrb_value rhs;
+    struct MRB_UEFI_POINTER_DATA *pd;
+
+    mrb_get_args(mrb, "o", &rhs);
+    pd = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, rhs, &mrb_uefi_pointer_type);
+    if (pd){
+        struct MRB_UEFI_POINTER_DATA *pd_self;
+        pd_self = (struct MRB_UEFI_POINTER_DATA *)mrb_get_datatype(mrb, self, &mrb_uefi_pointer_type);
+        return mrb_fixnum_value((mrb_int)((UINTN)pd_self->pointer - (UINTN)pd->pointer));
+    }else if (mrb_fixnum_p(rhs)){
+        return mrb_uefi_pointer_plus_helper(mrb, self, -mrb_fixnum(rhs));
+    }else{
+        mrb_raise(mrb, E_TYPE_ERROR, "argument error");
+    }
+
+    /* Do not reach here. */
+    return mrb_nil_value();
+}
+
 void
 mrb_init_uefi_pointer(mrb_state *mrb, struct RClass *mrb_uefi)
 {
@@ -211,6 +254,8 @@ mrb_init_uefi_pointer(mrb_state *mrb, struct RClass *mrb_uefi)
     mrb_define_method(mrb, p_cls, "inspect", mrb_uefi_pointer_inspect, ARGS_NONE());
     mrb_define_method(mrb, p_cls, "value", mrb_uefi_pointer_value, ARGS_NONE());
     mrb_define_method(mrb, p_cls, "to_i", mrb_uefi_pointer_to_i, ARGS_NONE());
+    mrb_define_method(mrb, p_cls, "+", mrb_uefi_pointer_plus, ARGS_REQ(1));
+    mrb_define_method(mrb, p_cls, "-", mrb_uefi_pointer_minus, ARGS_REQ(1));
 
     mrb_const_set(mrb, mrb_obj_value(p_cls), mrb_intern(mrb, "NULL"),
                   mrb_uefi_pointer_make_helper(mrb, p_cls, NULL));
