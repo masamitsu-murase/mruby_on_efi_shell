@@ -15,6 +15,12 @@
 #include <stdio.h>
 
 static mrb_value
+rs_pointer(mrb_state *mrb, mrb_value obj)
+{
+    return mrb_uefi_pointer_make(mrb, gRT);
+}
+
+static mrb_value
 rs_get_variable(mrb_state *mrb, mrb_value obj)
 {
     mrb_value name, guid;
@@ -212,6 +218,8 @@ mrb_init_uefi_runtime_service(mrb_state *mrb, struct RClass *mrb_uefi)
     struct RClass *mrb_ns;
 
     mrb_ns = mrb_define_module_under(mrb, mrb_uefi, "RuntimeService");
+
+    mrb_define_module_function(mrb, mrb_ns, "pointer", rs_pointer, ARGS_NONE());
     mrb_define_module_function(mrb, mrb_ns, "get_variable", rs_get_variable, ARGS_REQ(4));
     mrb_define_module_function(mrb, mrb_ns, "set_variable", rs_set_variable, ARGS_REQ(2));
     mrb_define_module_function(mrb, mrb_ns, "get_all_variable_names", rs_get_all_variable_names, ARGS_NONE());
