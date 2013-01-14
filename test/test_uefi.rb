@@ -2,15 +2,17 @@
 def assert(str)
   begin
     if (yield)
-      print("OK: #{str}\n")
+      print "."
       $ok += 1
     else
-      print("Fail: #{str}\n")
+      print "F"
       $ko += 1
+      $ko_list.push(str)
     end
   rescue => e
-    print("Error: #{str}: #{e}\n")
+    print "E"
     $error += 1
+    $error_list.push(str)
   end
 end
 
@@ -23,7 +25,9 @@ end
 def prepare
   $ok = 0
   $ko = 0
+  $ko_list = []
   $error = 0
+  $error_list = []
 end
 
 def report
@@ -33,6 +37,24 @@ def report
   puts "KO: #{$ko}"
   puts "ERROR: #{$error}"
   puts "================================"
+
+  unless ($ko_list.empty?)
+    puts "KO:"
+    $ko_list.each do |text|
+      print text
+      puts ""
+      puts ""
+    end
+  end
+
+  unless ($error_list.empty?)
+    puts "ERROR:"
+    $error_list.each do |text|
+      print text
+      puts ""
+      ptus ""
+    end
+  end
 end
 
 #------------------------------------------
