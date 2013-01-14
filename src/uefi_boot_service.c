@@ -22,6 +22,27 @@ bs_pointer(mrb_state *mrb, mrb_value self)
 }
 
 static mrb_value
+bs_handle_protocol(mrb_state *mrb, mrb_value self)
+{
+    mrb_value handle, guid;
+    EFI_HANDLE raw_handle;
+    EFI_GUID raw_guid;
+    EFI_STATUS status;
+    VOID *ptr;
+
+    mrb_get_args(mrb, "oo", &handle, &guid);
+    raw_handle = mrb_uefi_handle_raw_value(mrb, handle);
+    mrb_uefi_guid_get_guid(mrb, guid, &raw_guid);
+
+    status = gBS->HandleProtocol(raw_handle, &raw_guid, &ptr);
+    if (EFI_ERROR(status)){
+        return mrb_nil_value();
+    }
+
+    return mrb_uefi_pointer_make(mrb, ptr);
+}
+
+static mrb_value
 bs_protocols_per_handle(mrb_state *mrb, mrb_value self)
 {
     mrb_value handle;
@@ -122,6 +143,7 @@ mrb_init_uefi_boot_service(mrb_state *mrb, struct RClass *mrb_uefi)
 
     mrb_define_module_function(mrb, bs, "pointer", bs_pointer, ARGS_NONE());
 
+    mrb_define_module_function(mrb, bs, "handle_protocol", bs_handle_protocol, ARGS_REQ(2));
     mrb_define_module_function(mrb, bs, "protocols_per_handle", bs_protocols_per_handle, ARGS_REQ(1));
     mrb_define_module_function(mrb, bs, "locate_handle_buffer", bs_locate_handle_buffer, ARGS_REQ(1));
     mrb_define_module_function(mrb, bs, "locate_protocol", bs_locate_protocol, ARGS_REQ(1));
