@@ -29,9 +29,8 @@ rs_get_variable(mrb_state *mrb, mrb_value obj)
     EFI_STATUS status;
     EFI_GUID var_guid;
     UINTN size;
-    UINT8 *data;
 
-    mrb_get_args(mrb, "oo", &name, &guid);
+    mrb_get_args(mrb, "So", &name, &guid);
 
     name_u16 = uefi_ascii_to_utf16(mrb, name);
     mrb_uefi_guid_get_guid(mrb, guid, &var_guid);
@@ -42,21 +41,12 @@ rs_get_variable(mrb_state *mrb, mrb_value obj)
         return mrb_nil_value();
     }
 
-    data = (UINT8 *)malloc(size);
-    if (!data){
-        /* Should exception be raied? */
+    ret_val = mrb_str_new(mrb, NULL, size);
+    status = gRT->GetVariable((CHAR16 *)(RSTRING_PTR(name_u16)), &var_guid,
+                              NULL, &size, RSTRING_PTR(ret_val));
+    if (status != EFI_SUCCESS){
         return mrb_nil_value();
     }
-    status = gRT->GetVariable((CHAR16 *)(RSTRING_PTR(name_u16)), &var_guid,
-                              NULL, &size, data);
-    ret_val = mrb_ary_new_capa(mrb, size);
-    {
-        UINTN i;
-        for (i=0; i<size; i++){
-            mrb_ary_push(mrb, ret_val, mrb_fixnum_value(data[i]));
-        }
-    }
-    free(data);
 
     return ret_val;
 }
@@ -69,24 +59,15 @@ rs_set_variable(mrb_state *mrb, mrb_value obj)
     mrb_value name_u16;
     EFI_STATUS status;
     EFI_GUID var_guid;
-    int i;
-    UINT8 *buf;
 
-    mrb_get_args(mrb, "ooiA", &name, &guid, &attr, &data);
+    mrb_get_args(mrb, "SoiS", &name, &guid, &attr, &data);
 
     name_u16 = uefi_ascii_to_utf16(mrb, name);
     mrb_uefi_guid_get_guid(mrb, guid, &var_guid);
-    buf = (UINT8 *)malloc(RARRAY_LEN(data) * sizeof(UINT8));
-    if (!buf){
-        return mrb_nil_value();
-    }
-    for (i=0; i<RARRAY_LEN(data); i++){
-        buf[i] = (UINT8)mrb_fixnum(RARRAY_PTR(data)[i]);
-    }
 
     status = gRT->SetVariable((CHAR16 *)(RSTRING_PTR(name_u16)), &var_guid,
-                              (UINT32)attr, (UINTN)RARRAY_LEN(data), buf);
-    free(buf);
+                              (UINT32)attr, (UINTN)RSTRING_LEN(data),
+                              RSTRING_PTR(data));
     if (EFI_ERROR(status)){
         return mrb_nil_value();
     }

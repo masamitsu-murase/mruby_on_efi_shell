@@ -83,7 +83,7 @@ assert_equal(false, protocol.nil?, "UEFI::BootService.locate_protocol")
 #------------------------------------------
 # Variable
 a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
-data = [1, 2, 3, 4]
+data = [1, 2, 3, 4].pack("C*")
 assert_equal(true, UEFI::RuntimeService.set_variable("test_var", a, 6, data), "UEFI::RuntimeService.set_variable")
 assert_equal(data, UEFI::RuntimeService.get_variable("test_var", a), "UEFI::RuntimeService.get_variable")
 assert_equal(nil, UEFI::RuntimeService.get_variable("unknown_var", a), "UEFI::RuntimeService.get_variable (unknown_var)")
