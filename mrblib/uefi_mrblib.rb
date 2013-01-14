@@ -162,6 +162,13 @@ end
 
 
 module UEFI
+  class Pointer
+    attr_reader :origin
+  end
+end
+
+
+module UEFI
   class Protocol
     TYPES = [ :p, :u8, :u16, :u32, :u64, :i8, :i16, :i32, :i64, :h, :e, :b ]
     LONG_NAME_TYPES = [ :pointer, :uint8, :uint16, :uint32, :uint64,
@@ -170,9 +177,8 @@ module UEFI
 
     def self.inherited(cls)
       cls.instance_eval do
-        # members should be
-        #  [ { :name, :ret_type, :arg_type, :offset, :size }, ... ]
         @members = []
+        @pack_alignment = nil
       end
     end
 
@@ -196,14 +202,13 @@ module UEFI
       return index ? TYPES[index] : type
     end
 
-    def self.calculate_next_offset(type)
+    def self.calculate_next_offset(alignment)
       return 0 if (@members.empty?)
 
-      align = ALIGN_SIZE_INFO[type][:align]
       last_offset = @members.last[:offset]
       last_size = @members.last[:size]
 
-      return ((last_offset + last_size + align - 1) / align).to_i * align
+      return ((last_offset + last_size + alignment - 1) / alignment).to_i * alignment
     end
 
     def self.define_function(name, ret_type, arg_type, option = {})
@@ -212,15 +217,25 @@ module UEFI
       arg_type = arg_type.map{ |i| normalize_arg_type(i) }
       ret_type = normalize_arg_type(ret_type)
 
+      if (@pack_alignment)
+        alignment = [ @pack_alignment, TYPE_INFO[:p][:alignment] ].min
+      else
+        alignment = TYPE_INFO[:p][:alignment]
+      end
+
       if (option[:offset])
         offset = option[:offset]
       else
-        offset = calculate_next_offset(:p)
+        offset = calculate_next_offset(alignment)
       end
 
-      @members.push({ name: name, function: true,
-                      ret_type: ret_type, arg_type: arg_type,
-                      offset: offset, size: FUNCTION_POINTER_SIZE })
+      @members.push({ name: name, type: :p,
+                      alignment: alignment,
+                      offset: offset, size: TYPE_INFO[:p][:size],
+                      function: {
+                        ret_type: ret_type, arg_type: arg_type
+                      }
+                    })
 
       define_method(name) do |*args|
         check_arg(args, arg_type)
@@ -234,25 +249,73 @@ module UEFI
 
       type = normalize_arg_type(type)
 
+      if (@pack_alignment)
+        alignment = [ @pack_alignment, TYPE_INFO[type][:alignment] ].min
+      else
+        alignment = TYPE_INFO[type][:alignment]
+      end
+
       if (option[:offset])
         offset = option[:offset]
       else
-        offset = calculate_next_offset(type)
+        offset = calculate_next_offset(alignment)
       end
 
-      @members.push({ name: name, function: false,
-                      type: type,
-                      offset: offset, size: ALIGN_SIZE_INFO[type][:size] })
+      @members.push({ name: name, type: type,
+                      alignment: alignment,
+                      offset: offset, size: TYPE_INFO[type][:size] })
 
       define_method(name) do
         get_raw_value(type, offset)
       end
+
+      define_method("#{name}=".intern) do |value|
+        set_raw_value(type, offset, value)
+      end
+    end
+
+    def self.pack(alignment = nil)
+      alignment_list = [ nil, 1, 2, 4, 8 ]
+      raise "Invalid alignment" unless (alignment_list.include?(alignment))
+
+      @pack_alignment = alignment
+    end
+
+    def self.size
+      @size ||= calculate_next_offset(alignment)
+    end
+
+    def self.alignment
+      @alignment ||= @members.map{ |i| i[:alignment] }.max
+    end
+
+    def self.to_s(detail = false)
+      if (detail)
+        str_list = @members.map do |item|
+          if (item[:function])
+            arg_type_str = item[:function][:arg_type].map{ |i| i.to_s }.join(", ")
+            next "0x#{item[:offset].to_s(16).rjust(4,'0')}" +
+              "  #{item[:function][:ret_type]} #{item[:name]}(#{arg_type_str})"
+          else
+            next "0x#{item[:offset].to_s(16).rjust(4,'0')}" +
+              "  #{item[:type]} #{item[:name]}"
+          end
+        end
+        return "#{self.name}\n" + str_list.join("\n")
+      else
+        return super
+      end
     end
 
 
+    #================================================================
     def initialize(pointer)
       raise TypeError, "argument should be UEFI::Pointer." unless (pointer.kind_of?(Pointer))
       @pointer = pointer
+    end
+
+    def inspect
+      return "<#{self.class.name}: #{@pointer}"
     end
 
     def check_arg(args, arg_type)
