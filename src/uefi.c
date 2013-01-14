@@ -1,4 +1,6 @@
 
+#include <Library/UefiBootServicesTableLib.h>
+
 #include "uefi.h"
 
 void init_uefi_mrblib(mrb_state *mrb);
@@ -13,6 +15,7 @@ mrb_init_uefi(mrb_state *mrb)
 
     mrb_uefi = mrb_define_module(mrb, "UEFI");
 
+    mrb_define_const(mrb, mrb_uefi, "SPECIFICATION_VERSION", mrb_fixnum_value(gST->Hdr.Revision));
     mrb_define_const(mrb, mrb_uefi, "VERSION", mrb_str_new_cstr(mrb, UEFI_LIB_VERSION));
 
     mrb_init_uefi_boot_service(mrb, mrb_uefi);
