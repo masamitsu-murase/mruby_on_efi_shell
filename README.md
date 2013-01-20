@@ -1,5 +1,7 @@
 # mruby on EFI Shell
 
+Please refer to the [**project page**](http://masamitsu-murase.github.com/mruby_on_efi_shell/).
+
 ## Overview
 
 This is a [mruby](https://github.com/mruby/mruby) porting on [EFI Shell](http://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface).
