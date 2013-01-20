@@ -4,7 +4,7 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="mruby on EFI Shell : mruby on EFI Shell" />
+    <meta name="description" content="mruby on EFI Shell : mruby porting on EFI Shell" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -19,7 +19,7 @@
           <a id="forkme_banner" href="https://github.com/masamitsu-murase/mruby_on_efi_shell">View on GitHub</a>
 
           <h1 id="project_title">mruby on EFI Shell</h1>
-          <h2 id="project_tagline">mruby on EFI Shell</h2>
+          <h2 id="project_tagline">mruby porting on EFI Shell</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/masamitsu-murase/mruby_on_efi_shell/zipball/master">Download this project as a .zip file</a>
@@ -31,32 +31,80 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h3>Welcome to GitHub Pages.</h3>
+        <h3>Overview</h3>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p>This is a <a href="https://github.com/mruby/mruby">mruby</a> porting on <a href="http://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface">EFI Shell</a>.</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+<ul>
+<li>You can call UEFI functions via wrapper functions of <a href="http://wiki.phoenix.com/wiki/index.php/EFI_BOOT_SERVICES">BootService</a> and <a href="http://wiki.phoenix.com/wiki/index.php/EFI_RUNTIME_SERVICES">RuntimeService</a>.</li>
+<li>You can define any native C structure and you can access to the members via the structure.</li>
+</ul><h3>How to use</h3>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<ol>
+<li>Download UEFI Shell from <a href="http://sourceforge.net/projects/efi-shell/files/Releases/Official%20Releases/">Tiano page</a>.</li>
+<li>Put UEFI Shell binary in your USB memory as <code>EFI\BOOT\BOOTX64.efi</code>.</li>
+<li>Download <strong>mruby on EFI Shell</strong> from <a href="http://sdrv.ms/Yh4bch">download page</a>.</li>
+<li>Extract it and put it in your USB memory.</li>
+<li>You can run mruby script as follows:<br><code>
+&gt; mruby.efi script.rb
+</code>
+</li>
+</ol><h3>Samples</h3>
 
-<h3>Designer Templates</h3>
+<h4>Calling <code>ResetSystem</code> of Runtime Service</h4>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<div class="highlight"><pre><span class="c1"># Shutdown</span>
+<span class="c1"># Currently, the name of constants are too long...</span>
+<span class="no">UEFI</span><span class="o">::</span><span class="no">RuntimeService</span><span class="o">.</span><span class="n">reset_system</span><span class="p">(</span><span class="no">UEFI</span><span class="o">::</span><span class="no">RuntimeService</span><span class="o">::</span><span class="no">ResetShutdown</span><span class="p">,</span> <span class="no">UEFI</span><span class="o">::</span><span class="no">Status</span><span class="o">::</span><span class="no">SUCCESS</span><span class="p">)</span>
+</pre></div>
 
-<h3>Rather Drive Stick?</h3>
+<h4>Defining and calling UEFI native protocols</h4>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<p>This is an example of reading disk via <a href="http://wiki.phoenix.com/wiki/index.php/EFI_DISK_IO_PROTOCOL"><code>EFI_DISK_IO_PROTOCOL</code></a>.</p>
 
-<h3>Authors and Contributors</h3>
+<p>You can download entire source code from <a href="https://github.com/masamitsu-murase/mruby_on_efi_shell/blob/master/example/read_disk.rb"><code>example/read_disk.rb</code></a>.</p>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<div class="highlight"><pre><span class="c1"># This is a part of the source code.</span>
 
-<h3>Support or Contact</h3>
+<span class="c1"># Any native C structure can be defined.</span>
+<span class="k">class</span> <span class="nc">DiskIoProtocol</span> <span class="o">&lt;</span> <span class="no">UEFI</span><span class="o">::</span><span class="no">Protocol</span>
+  <span class="c1"># DiskIoProtocol: http://wiki.phoenix.com/wiki/index.php/EFI_DISK_IO_PROTOCOL</span>
+  <span class="no">GUID</span> <span class="o">=</span> <span class="no">UEFI</span><span class="o">::</span><span class="no">Guid</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">"CE345171-BA0B-11d2-8e4F-00a0c969723b"</span><span class="p">)</span>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+  <span class="n">define_variable</span><span class="p">(</span><span class="ss">:revision</span><span class="p">,</span> <span class="ss">:u64</span><span class="p">)</span>
+  <span class="n">define_function</span><span class="p">(</span><span class="ss">:read_disk</span><span class="p">,</span> <span class="ss">:efi_status</span><span class="p">,</span> <span class="o">[</span><span class="ss">:p</span><span class="p">,</span> <span class="ss">:u32</span><span class="p">,</span> <span class="ss">:u64</span><span class="p">,</span> <span class="ss">:u64</span><span class="p">,</span> <span class="ss">:p</span><span class="o">]</span><span class="p">)</span>
+  <span class="c1">#...</span>
+<span class="k">end</span>
+
+<span class="c1"># (snip)</span>
+
+<span class="c1"># Now, `handle` contains the Handle of DiskIoProtocol,</span>
+<span class="c1"># `media_id` contains ID of the disk.</span>
+<span class="nb">puts</span> <span class="s2">"handle: </span><span class="si">#{</span><span class="n">handle</span><span class="si">}</span><span class="s2">"</span>
+<span class="nb">puts</span> <span class="s2">"media_id: </span><span class="si">#{</span><span class="n">media_id</span><span class="si">}</span><span class="s2">"</span>
+
+<span class="c1"># Find DiskIoProtocol via HandleProtocol.</span>
+<span class="n">ptr</span> <span class="o">=</span> <span class="no">UEFI</span><span class="o">::</span><span class="no">BootService</span><span class="o">.</span><span class="n">handle_protocol</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="no">DiskIoProtocol</span><span class="o">::</span><span class="no">GUID</span><span class="p">)</span>
+<span class="n">dp</span> <span class="o">=</span> <span class="no">DiskIoProtocol</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span>
+
+<span class="n">buf</span> <span class="o">=</span> <span class="s2">" "</span> <span class="o">*</span> <span class="mi">512</span>  <span class="c1"># Buffer to be filled with returned data.</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">read_disk</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">media_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">buf</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">success?</span><span class="p">)</span>
+  <span class="n">print_binary_data</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+<span class="k">else</span>
+  <span class="nb">puts</span> <span class="s2">"ERROR: </span><span class="si">#{</span><span class="n">st</span><span class="si">}</span><span class="s2">"</span>
+<span class="k">end</span>
+</pre></div>
+
+<p>The result is as follows:<br><img src="images/vmware1.png" alt="Result of DiskIoProtocol"></p>
+
+<h4>Reference</h4>
+
+<p>[T.B.D.]</p>
+
+<h4>License</h4>
+
+<p>Same as mruby, MIT License.</p>
       </section>
     </div>
 
