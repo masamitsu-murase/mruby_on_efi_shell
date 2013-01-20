@@ -9,7 +9,7 @@ def assert(str)
       $ko += 1
       $ko_list.push(str)
     end
-  rescue => e
+  rescue
     print "E"
     $error += 1
     $error_list.push(str)
@@ -52,7 +52,7 @@ def report
     $error_list.each do |text|
       print text
       puts ""
-      ptus ""
+      puts ""
     end
   end
 end
@@ -65,25 +65,19 @@ prepare
 assert_equal("0.0.1", UEFI::VERSION, "UEFI module version")
 
 #------------------------------------------
-# LowLevel
+# LowLevel IO
 CMOS_INDEX = 0x70
 CMOS_DATA = 0x71
 CMOS_RTC_MIN = 0x02
 
-orig_index = UEFI::LowLevel.io_read8(CMOS_INDEX)
 UEFI::LowLevel.io_write8(CMOS_INDEX, CMOS_RTC_MIN)
-assert_equal(CMOS_RTC_MIN, UEFI::LowLevel.io_read8(CMOS_INDEX),
-             "UEFI::LowLevel io_read8/io_write8")
-
 min = UEFI::LowLevel.io_read8(CMOS_DATA)
-UEFI::LowLevel.io_write8(CMOS_INDEX, orig_index)
 
 # min is stored as BCD.
 assert("UEFI::LowLevel io_read8/io_write8 RTC") do
-  range = (0x00 .. 0x09).to_a + (0x10 .. 0x19).to_a +
-    (0x20 .. 0x29).to_a + (0x30 .. 0x39).to_a +
-    (0x40 .. 0x49).to_a + (0x50 .. 0x59).to_a
-  next range.include?(min)
+  bcd_range = (0..5).to_a.map{ |i| (0..9).to_a.map{ |j| i*16+j } }.flatten
+
+  bcd_range.include?(min)
 end
 
 
@@ -95,7 +89,9 @@ end
 # Protocol
 block_io_protocol_guid = UEFI::Guid.new("964e5b21-6459-11d2-8e39-00a0c969723b")
 protocol = UEFI::BootService.locate_protocol(block_io_protocol_guid)
-assert_equal(false, protocol.nil?, "UEFI::BootService.locate_protocol")
+assert("UEFI::BootService.locate_protocol") do
+  protocol
+end
 
 
 #==========================================
@@ -106,13 +102,21 @@ assert_equal(false, protocol.nil?, "UEFI::BootService.locate_protocol")
 # Variable
 a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
 data = [1, 2, 3, 4].pack("C*")
-assert_equal(true, UEFI::RuntimeService.set_variable("test_var", a, 6, data), "UEFI::RuntimeService.set_variable")
-assert_equal(data, UEFI::RuntimeService.get_variable("test_var", a), "UEFI::RuntimeService.get_variable")
-assert_equal(nil, UEFI::RuntimeService.get_variable("unknown_var", a), "UEFI::RuntimeService.get_variable (unknown_var)")
+assert("UEFI::RuntimeService.set_variable") do
+  UEFI::RuntimeService.set_variable("test_var", a, 6, data)
+end
+assert("UEFI::RuntimeService.get_variable") do
+  UEFI::RuntimeService.get_variable("test_var", a) == data
+end
+assert("UEFI::RuntimeService.get_variable (unknown_var)") do
+  UEFI::RuntimeService.get_variable("unknown_var", a).nil?
+end
 
 #------------------------------------------
 # Reset System
-assert_equal(true, UEFI::RuntimeService.respond_to?(:reset_system), "UEFI::RuntimeService.reset_system")
+assert("UEFI::RuntimeService.reset_system") do
+  UEFI::RuntimeService.respond_to?(:reset_system)
+end
 
 
 #==========================================
@@ -124,10 +128,17 @@ assert_equal(true, UEFI::RuntimeService.respond_to?(:reset_system), "UEFI::Runti
 a = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
 b = UEFI::Guid.new("01234567-0123-0123-0123-0123456789AB")
 c = UEFI::Guid.new("00000000-0123-0123-0123-0123456789AB")
-assert_equal([ 0x67, 0x45, 0x23, 0x01, 0x23, 0x01, 0x23, 0x01, 0x01, 0x23, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab ],
-             a.data.bytes.to_a, "UEFI::Guid data")
-assert_equal(a, b, "UEFI::Guid <=>")
-assert_equal(true, a > c, "UEFI::Guid <=>")
+assert("UEFI::Guid data") do
+  data = [ 0x67, 0x45, 0x23, 0x01, 0x23, 0x01, 0x23, 0x01, 0x01, 0x23, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab ]
+
+  a.data.bytes == data
+end
+assert("UEFI::Guid <=>") do
+  a == b
+end
+assert("UEFI::Guid <=>") do
+  a > c
+end
 
 #------------------------------------------
 # EFI_STATUS
