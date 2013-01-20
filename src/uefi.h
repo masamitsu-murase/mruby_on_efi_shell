@@ -4,7 +4,7 @@
 #include "mruby.h"
 #include "uefi_misc.h"
 
-#define UEFI_LIB_VERSION "0.0.1"
+#define UEFI_LIB_VERSION "1.0.0"
 
 void mrb_init_uefi(mrb_state *mrb);
 void mrb_init_uefi_gop(mrb_state *mrb, struct RClass *mrb_uefi);

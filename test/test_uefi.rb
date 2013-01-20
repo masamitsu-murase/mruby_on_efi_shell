@@ -62,7 +62,7 @@ prepare
 
 #------------------------------------------
 # UEFI
-assert_equal("0.0.1", UEFI::VERSION, "UEFI module version")
+assert_equal("1.0.0", UEFI::VERSION, "UEFI module version")
 
 #------------------------------------------
 # LowLevel IO
