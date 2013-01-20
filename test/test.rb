@@ -19,8 +19,8 @@ def print_binary_data(data)
 end
 
 class BlockIoProtocol < UEFI::Protocol
-  define_member(:revision, :u64)
-  define_member(:media, :p)
+  define_variable(:revision, :u64)
+  define_variable(:media, :p)
   define_function(:reset, :e, [:p, :b])
   define_function(:read_blocks, :e, [:p, :u32, :u64, :u64, :p])
   # ...
@@ -28,15 +28,15 @@ end
 
 # I will rename UEFI::Protocol to UEFI::Structure or any other name...
 class Media < UEFI::Protocol
-  define_member(:media_id, :uint32)
-  define_member(:removable_media, :b)
-  define_member(:media_present, :b)
-  define_member(:logical_partition, :b)
-  define_member(:read_only, :b)
-  define_member(:write_caching, :b)
-  define_member(:block_size, :u32)
-  define_member(:io_align, :u32)
-  define_member(:last_block, :u64)
+  define_variable(:media_id, :uint32)
+  define_variable(:removable_media, :b)
+  define_variable(:media_present, :b)
+  define_variable(:logical_partition, :b)
+  define_variable(:read_only, :b)
+  define_variable(:write_caching, :b)
+  define_variable(:block_size, :u32)
+  define_variable(:io_align, :u32)
+  define_variable(:last_block, :u64)
 end
 
 # EFI_BLOCK_IO_PROTOCOL_GUID

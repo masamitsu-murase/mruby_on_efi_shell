@@ -75,7 +75,7 @@ module UEFI
       end
     end
 
-    def self.define_member(name, type, option = {})
+    def self.define_variable(name, type, option = {})
       check_arg(type)
 
       type = normalize_arg_type(type)
